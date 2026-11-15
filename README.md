@@ -4,14 +4,14 @@ A beginner-level SQL Server project that loads the Sample - Superstore retail da
 
 **Business question:** Which orders lose the most money, and does heavy discounting explain it?
 
-**Business Requirements Document:** The BRD for this project is complete. See [docs/Superstore_BRD.docx](docs/Superstore_BRD.docx) for the problem statement, business impact, objectives, scope, requirements, implementation plan and acceptance criteria.
+**Business Requirements Document:** The BRD for this project is complete. See [Analysis/Superstore_BRD.docx](Analysis/Superstore_BRD.docx) for the problem statement, business impact, objectives, scope, requirements, implementation plan and acceptance criteria.
 
 ## 1. Dataset
 
 - **Name:** Sample - Superstore
 - **Source:** Kaggle ([add the dataset link here])
 - **Size:** 9,994 rows and 21 columns, one row per order line
-- **Note:** This is a public sample dataset, not real company data. The CSV is not included in this repository; download it from the source above.
+- **Note:** This is a public sample dataset, not real company data, used for educational purposes. The CSV is included in the [Analysis](Analysis/) folder for convenience; the original source is the Kaggle link above.
 
 ### Data dictionary
 
@@ -49,13 +49,13 @@ A beginner-level SQL Server project that loads the Sample - Superstore retail da
 
 | # | Deliverable | Purpose | SQL concepts used |
 | --- | --- | --- | --- |
-| 1 | `01_table_creation.sql` | Creates the `SuperstoreDB` table with one column per CSV column | `CREATE TABLE`, data types, `PRIMARY KEY`, `NOT NULL` |
-| 2 | `02_bulk_insert.sql` | Loads the CSV into the table | `BULK INSERT`, `FORMAT`, `FIRSTROW`, `FIELDQUOTE`, `CODEPAGE` |
-| 3 | `03_value_check.sql` | Confirms the load worked | `COUNT(*)`, alias, `TOP`, `SELECT *` |
-| 4 | `04_audit_table.sql` | Audits the descriptive columns | `DISTINCT`, `ORDER BY` on several columns |
-| 5 | `05_loss_analysis.sql` | Finds the biggest losses and worst margins | `TOP`, `ORDER BY`, calculated column with alias, `WHERE` with `AND`, `DISTINCT` |
-| 6 | `06_discount_hypothesis.sql` | Tests whether heavy discounts go with losses | Comparison operators, `AND`, `ORDER BY`, `DISTINCT` |
-| 7 | `docs/Superstore_BRD.docx` | Business Requirements Document (completed) | Requirements, scope, risks, implementation plan, acceptance criteria |
+| 1 | [`01_table_creation.sql`](Analysis/sql/01_table_creation.sql) | Creates the `SuperstoreDB` table with one column per CSV column | `CREATE TABLE`, data types, `PRIMARY KEY`, `NOT NULL` |
+| 2 | [`02_bulk_insert.sql`](Analysis/sql/02_bulk_insert.sql) | Loads the CSV into the table | `BULK INSERT`, `FORMAT`, `FIRSTROW`, `FIELDQUOTE`, `CODEPAGE` |
+| 3 | [`03_value_check.sql`](Analysis/sql/03_value_check.sql) | Confirms the load worked | `COUNT(*)`, alias, `TOP`, `SELECT *` |
+| 4 | [`04_audit_table.sql`](Analysis/sql/04_audit_table.sql) | Audits the descriptive columns | `DISTINCT`, `ORDER BY` on several columns |
+| 5 | [`05_loss_analysis.sql`](Analysis/sql/05_loss_analysis.sql) | Finds the biggest losses and worst margins | `TOP`, `ORDER BY`, calculated column with alias, `WHERE` with `AND`, `DISTINCT` |
+| 6 | [`06_discount_hypothesis.sql`](Analysis/sql/06_discount_hypothesis.sql) | Tests whether heavy discounts go with losses | Comparison operators, `AND`, `ORDER BY`, `DISTINCT` |
+| 7 | [`Superstore_BRD.docx`](Analysis/Superstore_BRD.docx) | Business Requirements Document (completed) | Requirements, scope, risks, implementation plan, acceptance criteria |
 
 ### Questions each script answers
 
@@ -71,34 +71,34 @@ A beginner-level SQL Server project that loads the Sample - Superstore retail da
 | Document | Description |
 | --- | --- |
 | `README.md` | Project overview, data dictionary, scripts and how to run them |
-| `docs/Superstore_BRD.docx` | Business Requirements Document: business problem and impact, objectives, scope, stakeholders, business and functional requirements, risks, a three-phase implementation plan, benefits and acceptance criteria |
+| [`Analysis/Superstore_BRD.docx`](Analysis/Superstore_BRD.docx) | Business Requirements Document: business problem and impact, objectives, scope, stakeholders, business and functional requirements, risks, a three-phase implementation plan, benefits and acceptance criteria |
 
 ## 4. How to run
 
 1. Install SQL Server (Developer or Express edition) and SQL Server Management Studio (SSMS).
-2. Create a database named `Superstore`:
-   ```sql
-   CREATE DATABASE Superstore;
-   ```
-3. Download the dataset from Kaggle and save the CSV in a folder that SQL Server can read, for example `C:\Data\`.
-4. Open `02_bulk_insert.sql` and change the file path to where you saved the CSV.
-5. Run the scripts in order, from `01` to `06`, in SSMS (press F5).
-6. After the load script (`02`), run `03_value_check.sql`. The table should contain **9,994 rows**.
+2. Download or clone this repository.
+3. Save `Analysis/Sample - Superstore.csv` in a folder that SQL Server can read, for example `C:\Data\`.
+4. Open `Analysis/sql/01_table_creation.sql` in SSMS and run it. It creates the `Superstore` database and the `SuperstoreDB` table.
+5. Open `Analysis/sql/02_bulk_insert.sql`, change the file path to where you saved the CSV, and run it.
+6. Run `03_value_check.sql`. The table should contain **9,994 rows**.
+7. Run `04_audit_table.sql`, `05_loss_analysis.sql` and `06_discount_hypothesis.sql` in order.
 
 ## 5. Repository structure
 
 ```
-superstore-loss-discount-analysis/
+Superstore-Loss-and-Discount-Analysis-SQL-Server-/
 |-- README.md
-|-- docs/
-|   `-- Superstore_BRD.docx
-|-- sql/
-|   |-- 01_table_creation.sql
-|   |-- 02_bulk_insert.sql
-|   |-- 03_value_check.sql
-|   |-- 04_audit_table.sql
-|   |-- 05_loss_analysis.sql
-|   `-- 06_discount_hypothesis.sql
+|-- LICENSE
+`-- Analysis/
+    |-- Sample - Superstore.csv
+    |-- Superstore_BRD.docx
+    `-- sql/
+        |-- 01_table_creation.sql
+        |-- 02_bulk_insert.sql
+        |-- 03_value_check.sql
+        |-- 04_audit_table.sql
+        |-- 05_loss_analysis.sql
+        `-- 06_discount_hypothesis.sql
 ```
 
 ## 6. Scope and limitations
@@ -119,3 +119,7 @@ SQL Server, T-SQL, SQL Server Management Studio (SSMS), Microsoft Word (BRD)
 - Convert the two date formats with `TRY_CAST` and study losses by month.
 - Split the flat table into customers, products and orders tables and rebuild the analysis with joins.
 - Build a Power BI dashboard on top of the cleaned data.
+
+## 9. License
+
+This project's code is released under the MIT License (see `LICENSE`). The dataset belongs to its original source on Kaggle and is subject to that source's terms.
