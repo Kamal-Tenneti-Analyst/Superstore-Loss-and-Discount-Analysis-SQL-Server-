@@ -1,1 +1,6 @@
 
+mkdir data
+copy "Sample - Superstore.csv" data\
+git add .
+git commit -m "Add Superstore dataset"
+git push
