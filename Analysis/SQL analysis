@@ -1,0 +1,172 @@
+-- 01_table_creation.sql
+-- Purpose: create the Superstore database (run once) and the SuperstoreDB table
+
+CREATE DATABASE Superstore;
+GO
+
+USE Superstore;
+GO
+
+CREATE TABLE SuperstoreDB (
+    [Row ID]        INT            NOT NULL PRIMARY KEY,
+    [Order ID]      VARCHAR(20)    NOT NULL,
+    [Order Date]    VARCHAR(12)    NOT NULL,   -- text for now (two date formats in the file)
+    [Ship Date]     VARCHAR(12)    NOT NULL,   -- text for now (two date formats in the file)
+    [Ship Mode]     VARCHAR(20)    NOT NULL,
+    [Customer ID]   VARCHAR(20)    NOT NULL,
+    [Customer Name] VARCHAR(50)    NOT NULL,
+    Segment         VARCHAR(20)    NOT NULL,
+    Country         VARCHAR(30)    NOT NULL,
+    City            VARCHAR(50)    NOT NULL,
+    State           VARCHAR(50)    NOT NULL,
+    [Postal Code]   VARCHAR(10)    NOT NULL,   -- identifier, not a number
+    Region          VARCHAR(10)    NOT NULL,
+    [Product ID]    VARCHAR(20)    NOT NULL,
+    Category        VARCHAR(20)    NOT NULL,
+    [Sub-Category]  VARCHAR(20)    NOT NULL,
+    [Product Name]  VARCHAR(200)   NOT NULL,
+    Sales           DECIMAL(12,4)  NOT NULL,
+    Quantity        INT            NOT NULL,
+    Discount        DECIMAL(4,2)   NOT NULL,
+    Profit          DECIMAL(12,4)  NOT NULL
+);
+GO
+
+
+
+
+-- 02_bulk_insert.sql
+-- Purpose: load the Superstore CSV into the SuperstoreDB table
+-- Before running: change the file path below to where you saved the CSV
+
+USE Superstore;
+GO
+
+BULK INSERT SuperstoreDB
+FROM 'C:\Data\Sample - Superstore.csv'   -- <-- change to your CSV location
+WITH (
+    FORMAT     = 'CSV',
+    FIRSTROW   = 2,        -- skip the header row
+    FIELDQUOTE = '"',      -- some product names contain commas inside quotes
+    CODEPAGE   = '1252'    -- the file is not UTF-8
+);
+GO
+
+
+
+-- 03_value_check.sql
+-- Purpose: confirm the load worked
+
+USE Superstore;
+GO
+
+-- Total number of data rows (expected: 9994)
+SELECT COUNT(*) AS TotalRows FROM SuperstoreDB;
+
+-- Preview the first 10 rows
+SELECT TOP 10 * FROM SuperstoreDB;
+
+
+
+-- 04_audit_table.sql
+-- Purpose: audit the descriptive columns before analysing
+
+USE Superstore;
+GO
+
+-- What are the categories?
+SELECT DISTINCT Category FROM SuperstoreDB;
+
+-- Which sub-category belongs to which category?
+SELECT DISTINCT Category, [Sub-Category]
+FROM SuperstoreDB
+ORDER BY Category ASC, [Sub-Category] DESC;
+
+-- Other descriptive columns
+SELECT DISTINCT Region      FROM SuperstoreDB;
+SELECT DISTINCT [Ship Mode] FROM SuperstoreDB;
+SELECT DISTINCT Segment     FROM SuperstoreDB;
+SELECT DISTINCT State       FROM SuperstoreDB ORDER BY State;
+
+-- Which discount levels exist?
+SELECT DISTINCT Discount, Category
+FROM SuperstoreDB
+ORDER BY Discount;
+
+
+
+-- 05_loss_analysis.sql
+-- Purpose: find the biggest losses and the worst margins
+
+USE Superstore;
+GO
+
+-- The 10 biggest losses
+SELECT TOP 10 [Row ID], [Sub-Category], Sales, Discount, Profit
+FROM SuperstoreDB
+ORDER BY Profit ASC;
+
+-- The 10 worst profit margins (alias, calculation, execution order)
+SELECT TOP 10 [Row ID], [Sub-Category], Sales, Discount, Profit,
+       Profit / Sales AS ProfitMargin
+FROM SuperstoreDB
+ORDER BY ProfitMargin ASC, [Row ID];
+
+-- Which sub-categories appear among the really big losses?
+SELECT DISTINCT [Sub-Category]
+FROM SuperstoreDB
+WHERE Profit < -500;
+
+-- Losses in the Central region
+SELECT TOP 10 [Row ID], City, State, [Sub-Category], Sales, Discount, Profit
+FROM SuperstoreDB
+WHERE Profit < 0 AND Region = 'Central'
+ORDER BY Profit ASC;
+
+-- Losses in Texas
+SELECT TOP 10 [Row ID], City, [Sub-Category], Sales, Discount, Profit
+FROM SuperstoreDB
+WHERE Profit < 0 AND State = 'Texas'
+ORDER BY Profit ASC;
+
+
+
+
+-- 06_discount_hypothesis.sql
+-- Purpose: test whether heavy discounting is linked to losses
+
+USE Superstore;
+GO
+
+-- Loss-making rows with a heavy discount (30% or more)
+SELECT [Row ID], [Sub-Category], Sales, Discount, Profit
+FROM SuperstoreDB
+WHERE Profit < 0 AND Discount >= 0.3
+ORDER BY Profit ASC;
+
+-- Loss-making rows with no discount at all
+SELECT [Row ID], [Sub-Category], Sales, Discount, Profit
+FROM SuperstoreDB
+WHERE Profit < 0 AND Discount = 0;
+
+-- Profitable rows with a heavy discount (do any survive?)
+SELECT [Row ID], [Sub-Category], Sales, Discount, Profit
+FROM SuperstoreDB
+WHERE Profit > 0 AND Discount >= 0.3
+ORDER BY Profit DESC;
+
+-- Loss-making rows with a light discount (under 30%, but not zero)
+SELECT [Row ID], [Sub-Category], Sales, Discount, Profit
+FROM SuperstoreDB
+WHERE Profit < 0 AND Discount > 0 AND Discount < 0.3
+ORDER BY Profit ASC;
+
+-- Which discount levels are common among losses?
+SELECT DISTINCT Discount
+FROM SuperstoreDB
+WHERE Profit < 0
+ORDER BY Discount;
+
+
+
+
